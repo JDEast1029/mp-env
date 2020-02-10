@@ -1,0 +1,42 @@
+{
+  "name": "mp-env",
+  "version": "1.0.0",
+  "description": "小程序开发环境",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run dev",
+    "dev": "rm -rf ./dist && npm run serve",
+    "serve": "webpack --config ./config/webpack.config.js --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JDEast1029/mp-env.git"
+  },
+  "keywords": [
+    "miniprogram"
+  ],
+  "author": "jd",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JDEast1029/mp-env/issues"
+  },
+  "homepage": "https://github.com/JDEast1029/mp-env#readme",
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/preset-env": "^7.8.4",
+    "babel-loader": "^8.0.6",
+    "copy-webpack-plugin": "^5.1.1",
+    "css-loader": "^3.4.2",
+    "file-loader": "^5.0.2",
+    "mini-css-extract-plugin": "^0.9.0",
+    "node-sass": "^4.13.1",
+    "npm-run-all": "^4.1.5",
+    "sass-loader": "^8.0.2",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "vant-weapp": "^0.5.27"
+  }
+}
