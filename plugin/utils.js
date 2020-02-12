@@ -31,7 +31,23 @@ const isEmptyObject = (obj) => {
 	return keys.length === 0;
 }
 
+/**
+* 获取JSON文件的配置,app.json 或者页面的json
+* @param {*} jsonPath 
+*/
+const getJSONConfig = (jsonPath) => {
+	const content = fs.readFileSync(jsonPath, 'utf8');
+	const {pages, subpackages, usingComponents} = JSON.parse(content);
+ 
+	return {
+		pages,
+		subpackages,
+		usingComponents
+	}
+ }
+
 module.exports = {
+	getJSONConfig,
 	formatEntry,
 	getRelatedPath,
 	isEmptyObject

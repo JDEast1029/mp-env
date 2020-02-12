@@ -38,11 +38,8 @@ module.exports = {
 				use: [
 					{
 						loader: path.resolve('plugin/alias-loader.js'),
-						options: {
-							test: 1
-						}
 					}
-				]
+				],
 			}
 		]
 	},

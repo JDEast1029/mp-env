@@ -3,24 +3,9 @@ const fs = require('fs')
 const replaceExt = require('replace-ext')
 const MultiEntryPlugin = require('webpack/lib/MultiEntryPlugin')
 const SingleEntryPlugin = require('webpack/lib/SingleEntryPlugin')
-const { formatEntry, getRelatedPath, isEmptyObject } = require('./utils');
+const { getJSONConfig, getRelatedPath, isEmptyObject } = require('./utils');
 
 const APP_ROOT = process.cwd();
-
-/**
-* 获取JSON文件的配置,app.json 或者页面的json
-* @param {*} jsonPath 
-*/
-const getJSONConfig = (jsonPath) => {
-   const content = fs.readFileSync(jsonPath, 'utf8');
-   const {pages, subpackages, usingComponents} = JSON.parse(content);
-
-   return {
-	   pages,
-	   subpackages,
-	   usingComponents
-   }
-}
 
 // const ASSETS_EXTS = ['.json', '.wxml', '.wxss', '.scss', '.less']; // file-loader会生成很多文件,TODO 可不可以把生成的资源放在原路径，如果开启，可在emit的回调里做处理：删除对应的assets
 const ASSETS_EXTS = ['.json'];
@@ -60,7 +45,6 @@ class MPWebpackPlugin {
 		compiler.hooks.emit.tapAsync('MPWebpackPlugin', (compilation, callback) => {
 			// TODO 会将所有构建生成的文件全部不输出，TODO 优化
 			delete compilation.assets['mp_assets.js']; // 不输出mp_assets.js
-			console.log(compilation.assets);
 			callback();
 		});
 	}
