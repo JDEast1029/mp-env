@@ -12,6 +12,8 @@ module.exports = {
 		path: path.resolve(APP_ROOT, 'dist'),
 	},
 	resolve: { 
+		modules: [path.resolve(APP_ROOT, 'src')],
+		extensions: [".js", ".json", "wxml", "wxss", ".scss"], // 自动解析某些扩展,能够使用户在引入模块时不带扩展
 		alias: {
 			'@utils': path.resolve(APP_ROOT, 'src/utils'),
 			'@components': path.resolve(APP_ROOT, 'src/components'),
@@ -27,6 +29,21 @@ module.exports = {
 					}
 				]
 			},
+			{
+				test: /\.(wxml|wxss)$/,
+				use: ['file-loader'],
+			},
+			{
+				test: /\.json$/,
+				use: [
+					{
+						loader: path.resolve('plugin/alias-loader.js'),
+						options: {
+							test: 1
+						}
+					}
+				]
+			}
 		]
 	},
 	plugins: [
@@ -35,11 +52,12 @@ module.exports = {
 			{ 
 				from: './src', 
 				to: './',
-				// ignore: ['**/*.js']
+				ignore: ['**/.DS_Store', '**/*.md']
 			},
 		]),
 	],
 	optimization: {
+		minimize: false, // 正式时开启压缩
 		// 原：CommonsChunkPlugin()
 		splitChunks: {
 			name: true,
