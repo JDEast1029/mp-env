@@ -7,13 +7,14 @@ const MPWebpackPlugin = require('../plugin/mp-webpack-plugin');
 const APP_ROOT = process.cwd();
 
 module.exports = {
-	entry: './src/app.json',
+	entry: './src/app.js',
 	output: {
 		path: path.resolve(APP_ROOT, 'dist'),
 	},
 	resolve: { 
 		alias: {
 			'@utils': path.resolve(APP_ROOT, 'src/utils'),
+			'@components': path.resolve(APP_ROOT, 'src/components'),
 		}
 	},
 	module: {

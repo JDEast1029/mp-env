@@ -1,9 +1,9 @@
 const path = require('path');
 const fs = require('fs')
-const { formatEntry, getRelatedPath, isEmptyObject } = require('./utils');
-
+const replaceExt = require('replace-ext')
 const MultiEntryPlugin = require('webpack/lib/MultiEntryPlugin')
 const SingleEntryPlugin = require('webpack/lib/SingleEntryPlugin')
+const { formatEntry, getRelatedPath, isEmptyObject } = require('./utils');
 
 const APP_ROOT = process.cwd();
 
@@ -32,26 +32,30 @@ class MPWebpackPlugin {
 	apply(compiler) {
 		this.compiler = compiler;
 		let options = compiler.options;
+		
 		let entry = path.resolve(APP_ROOT, options.entry);
+		let config = replaceExt(entry, '.json');
+		entry = replaceExt(path.relative(this.dirname, entry), '');
+		this.entries.push(entry);
+
+		this.initPages(config);
 
 		/* ----------  Hooks  ------------- */
 		compiler.hooks.entryOption.tap('MPWebpackPlugin', (context, entry) => {
-			this.initPages(entry);
 			this.loadEntries(context);
 			// 返回 true 告诉 webpack 内置插件就不要处理入口文件了
 			return true;
 		});
 		// 监听 watchRun 事件
 		compiler.hooks.watchRun.tap('MinaWebpackPlugin', (compiler, done) => {
-			// this.initPages(entry);
 			this.loadEntries(compiler.rootContext);
 			done && done();
 		})
 	}
 
 	// 根据pages和subpackages找到小程序内的所有页面
-	initPages(entry) {
-		let {pages = [], subpackages = []} = getJSONConfig(entry);
+	initPages(entryConfig) {
+		let {pages = [], subpackages = []} = getJSONConfig(entryConfig);
 
 		[...pages, ...subpackages].forEach(page => {
 			if (!this.entries.includes(page)) {
@@ -73,8 +77,8 @@ class MPWebpackPlugin {
 			if (!isEmpty) {
 				let paths = Object.values(usingComponents); // 引用的组件路径
 				paths.map((cPath) => {
-					let absolutePath = path.resolve(this.dirname, usingPath);
-					let folder = path.dirname(absolutePath);
+					let absoluteUsingPath = path.resolve(this.dirname, usingPath);
+					let folder = path.dirname(absoluteUsingPath);
 					let componentPath = path.resolve(folder, cPath); // 引用组件的绝对路径
 					componentPath = path.relative(this.dirname, componentPath); // 组件相对于dirname的路径
 					if (!this.entries.includes(componentPath)) {
