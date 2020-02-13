@@ -3,12 +3,12 @@ const fs = require('fs')
 const replaceExt = require('replace-ext')
 const MultiEntryPlugin = require('webpack/lib/MultiEntryPlugin')
 const SingleEntryPlugin = require('webpack/lib/SingleEntryPlugin')
-const { getJSONConfig, getRelatedPath, isEmptyObject } = require('./utils');
+const { getJSONConfig, getRelatedPath, isEmptyObject, getDirFile } = require('./utils');
 
 const APP_ROOT = process.cwd();
 
-// const ASSETS_EXTS = ['.json', '.wxml', '.wxss', '.scss', '.less']; // file-loader会生成很多文件,TODO 可不可以把生成的资源放在原路径，如果开启，可在emit的回调里做处理：删除对应的assets
-const ASSETS_EXTS = ['.json'];
+const ASSETS_EXTS = ['.json', '.wxml', '.wxss', '.scss', '.less'];
+// const ASSETS_EXTS = ['.json'];
 
 class MPWebpackPlugin {
 	constructor(options) {
@@ -22,12 +22,7 @@ class MPWebpackPlugin {
 		this.compiler = compiler;
 		let options = compiler.options;
 		
-		let entry = path.resolve(APP_ROOT, options.entry);
-		let config = replaceExt(entry, '.json');
-		entry = replaceExt(path.relative(this.dirname, entry), '');
-		this.entries.push(entry);
-
-		this.initPages(config);
+		this.initApp(options.entry);
 
 		/* ----------  Hooks  ------------- */
 		compiler.hooks.entryOption.tap('MPWebpackPlugin', (context, entry) => {
@@ -36,6 +31,13 @@ class MPWebpackPlugin {
 			// 返回 true 告诉 webpack 内置插件就不要处理入口文件了
 			return true;
 		});
+		// compiler.hooks.compilation.tap('MPWebpackPlugin', (compilation) => {
+		// 	compilation.hooks.succeedModule.tap('MPWebpackPlugin', (module1) => {
+		// 		this.entries.forEach((entry) => {
+		// 			this.getComponents(entry);
+		// 		})
+		// 	})
+		// });
 		// 监听 watchRun 事件
 		compiler.hooks.watchRun.tap('MinaWebpackPlugin', (compiler, done) => {
 			this.loadEntries(compiler.rootContext);
@@ -43,10 +45,25 @@ class MPWebpackPlugin {
 		});
 		// 所有模块的转换和代码块对应的文件已经生成好， 需要输出的资源即将输出
 		compiler.hooks.emit.tapAsync('MPWebpackPlugin', (compilation, callback) => {
-			// TODO 会将所有构建生成的文件全部不输出，TODO 优化
 			delete compilation.assets['mp_assets.js']; // 不输出mp_assets.js
 			callback();
 		});
+	}
+
+	initApp(entryPath) {
+		entryPath = path.resolve(APP_ROOT, entryPath); // webpack入口的绝对路径
+		let config = replaceExt(entryPath, '.json'); // app.json的绝对路径
+		let files = getDirFile(entryPath); // src目录下的所有文件或文件夹名
+		files.forEach(file => {
+			if (/\.js$/.test(file)) {
+				let entry = replaceExt(path.relative(this.dirname, entryPath), '');
+				this.entries.push(entry);
+			} else if (/\.(wxml|wxss|json|scss|less)$/.test(file)){
+				let entry = path.resolve(this.dirname, file);
+				this.assets.push(entry);
+			}
+		});
+		this.initPages(config);
 	}
 
 	// 根据pages和subpackages找到小程序内的所有页面
@@ -73,11 +90,21 @@ class MPWebpackPlugin {
 			const isEmpty = isEmptyObject(usingComponents);
 			if (!isEmpty) {
 				let paths = Object.values(usingComponents); // 引用的组件路径
+				let { alias = {} } = this.compiler.options.resolve;
+				let aliasKeys = Object.keys(alias);
 				paths.map((cPath) => {
 					let absoluteUsingPath = path.resolve(this.dirname, usingPath);
 					let folder = path.dirname(absoluteUsingPath);
-					let componentPath = path.resolve(folder, cPath); // 引用组件的绝对路径
-					componentPath = path.relative(this.dirname, componentPath); // 组件相对于dirname的路径
+					let componentPath;
+					let [key] = aliasKeys.filter(key => new RegExp(`^${key}`).test(cPath))
+					if (key) {
+						let aliasPath = cPath.replace(key, alias[key]);
+						componentPath = path.relative(this.dirname, aliasPath);
+					} else {
+						componentPath = path.resolve(folder, cPath); // 引用组件的绝对路径
+						componentPath = path.relative(this.dirname, componentPath); // 组件相对于dirname的路径
+					}
+					
 					if (!this.entries.includes(componentPath)) {
 						this.entries.push(componentPath);
 					}

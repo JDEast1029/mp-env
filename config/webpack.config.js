@@ -1,6 +1,5 @@
 // 第三方库
 const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
 const MPWebpackPlugin = require('../plugin/mp-webpack-plugin');
 
 // const
@@ -31,13 +30,31 @@ module.exports = {
 			},
 			{
 				test: /\.(wxml|wxss)$/,
-				use: ['file-loader'],
+				use: [
+					{
+						loader: 'file-loader',
+						options: {
+							name(file) {
+								return '[path][name].[ext]';
+							},
+							outputPath: (url, resourcePath, context) => {
+								return `${url.replace(/^src\//, '')}`;
+							}
+						},
+					}
+				]
 			},
 			{
 				test: /\.json$/,
 				use: [
 					{
-						loader: path.resolve('plugin/alias-loader.js'),
+						loader: path.resolve('plugin/json-alias-loader.js'),
+						options: {
+							outputPath: (resourcePath, context) => {
+								let url = path.relative(APP_ROOT, resourcePath);
+								return `${url.replace(/^src\//, '')}`;
+							}
+						},
 					}
 				],
 			}
@@ -45,13 +62,6 @@ module.exports = {
 	},
 	plugins: [
 		new MPWebpackPlugin(),
-		new CopyPlugin([
-			{ 
-				from: './src', 
-				to: './',
-				ignore: ['**/.DS_Store', '**/*.md']
-			},
-		]),
 	],
 	optimization: {
 		minimize: false, // 正式时开启压缩

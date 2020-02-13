@@ -1,11 +1,14 @@
 const fs = require('fs');
 const path = require('path');
+const { getOptions } = require('loader-utils');
 const { isEmptyObject } = require('./utils');
 
 module.exports = function (source) {
+	const options = getOptions(this) || {};
 	// hack 用于访问 webpack 的 Compiler 对象。this._compiler将被废除，后面通过loader的options传入alias
 	let { resolve = {} } = this._compiler.options || {};
 	let { alias } = resolve;
+	let outputPath = path.relative(this.context, this.resourcePath);
 	let ALIAS_REGEX_MAP = {};
 	Object.keys(alias).forEach((key) => ALIAS_REGEX_MAP[key] = new RegExp(`^${key}`));
 
@@ -28,9 +31,12 @@ module.exports = function (source) {
 			});
 		}
 
-		// TODO 输出的json文件内容没有被修改
-		
-		return JSON.stringify(config);
+		if (options.outputPath && typeof options.outputPath === 'function') {
+			outputPath = options.outputPath(this.resourcePath, this.context);
+		}
+		let content = JSON.stringify(config);
+		this.emitFile(outputPath, content);
+		return content;
 	}
 
 	return source;

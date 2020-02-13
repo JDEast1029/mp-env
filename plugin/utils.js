@@ -44,11 +44,21 @@ const getJSONConfig = (jsonPath) => {
 		subpackages,
 		usingComponents
 	}
- }
+}
+
+const getDirFile = (dir) => {
+	if (fs.lstatSync(dir).isDirectory()) {
+		return fs.readdirSync(dir);
+	} else {
+		dir = path.dirname(dir);
+		return getDirFile(dir);
+	}
+}
 
 module.exports = {
 	getJSONConfig,
 	formatEntry,
 	getRelatedPath,
-	isEmptyObject
+	isEmptyObject,
+	getDirFile
 } 
