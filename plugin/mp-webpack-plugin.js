@@ -31,13 +31,6 @@ class MPWebpackPlugin {
 			// 返回 true 告诉 webpack 内置插件就不要处理入口文件了
 			return true;
 		});
-		// compiler.hooks.compilation.tap('MPWebpackPlugin', (compilation) => {
-		// 	compilation.hooks.succeedModule.tap('MPWebpackPlugin', (module1) => {
-		// 		this.entries.forEach((entry) => {
-		// 			this.getComponents(entry);
-		// 		})
-		// 	})
-		// });
 		// 监听 watchRun 事件
 		compiler.hooks.watchRun.tap('MinaWebpackPlugin', (compiler, done) => {
 			this.loadEntries(compiler.rootContext);
@@ -149,44 +142,3 @@ class MPWebpackPlugin {
 }
 
 module.exports = MPWebpackPlugin;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // 在webpack的entry配置处理完之后执行
-// compiler.hooks.entryOption.tap('MPWebpackPlugin', (context, entry) => {
-// 	console.log('entryOption', entry);
-// });
-// // compilation包含了当前的模块资源、编译生成资源、变化的文件
-// compiler.hooks.compilation.tap('MPWebpackPlugin', (compilation, compilationParams) => {
-// 	console.log('compilation');
-// });
-
-// // 监听文件变化
-// compiler.hooks.watchRun.tapAsync('MPWebpackPlugin', (compiler) => {
-// 	console.log('watchRun');
-// });
-
-// compiler.hooks.afterCompile.tapAsync('MPWebpackPlugin', (compilation, callback) => {
-// 	// 把 HTML 文件添加到文件依赖列表，好让 Webpack 去监听 HTML 模块文件，在 HTML 模版文件发生变化时重新启动一次编译
-// 	console.log('afterCompile');
-// 	callback();
-// });
-
-// // 所有模块的转换和代码块对应的文件已经生成好， 需要输出的资源即将输出
-// compiler.hooks.emit.tapAsync('MPWebpackPlugin', (compilation, callback) => {
-// 	callback();
-// });
