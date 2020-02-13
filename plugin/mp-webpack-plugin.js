@@ -93,6 +93,7 @@ class MPWebpackPlugin {
 				let { alias = {} } = this.compiler.options.resolve;
 				let aliasKeys = Object.keys(alias);
 				paths.map((cPath) => {
+					// 暂时默认为链接，如果是本地的就需要修改了
 					if (/^plugin:/.test(cPath)) {
 						return cPath;
 					}
