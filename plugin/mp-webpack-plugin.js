@@ -93,6 +93,9 @@ class MPWebpackPlugin {
 				let { alias = {} } = this.compiler.options.resolve;
 				let aliasKeys = Object.keys(alias);
 				paths.map((cPath) => {
+					if (/^plugin:/.test(cPath)) {
+						return cPath;
+					}
 					let absoluteUsingPath = path.resolve(this.dirname, usingPath);
 					let folder = path.dirname(absoluteUsingPath);
 					let componentPath;
